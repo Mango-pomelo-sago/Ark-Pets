@@ -6,6 +6,7 @@ package cn.harryh.arkpets;
 import cn.harryh.arkpets.assets.ModelsDataset;
 import cn.harryh.arkpets.concurrent.*;
 import cn.harryh.arkpets.controllers.BehaviorModule;
+import cn.harryh.arkpets.controllers.EfficiencyModule;
 import cn.harryh.arkpets.controllers.ModelsModule;
 import cn.harryh.arkpets.controllers.RootModule;
 import cn.harryh.arkpets.controllers.SettingsModule;
@@ -55,6 +56,7 @@ public class ArkHomeFX extends Application {
     public ModelsModule modelsModule;
     public BehaviorModule behaviorModule;
     public SettingsModule settingsModule;
+    public EfficiencyModule efficiencyModule;
 
     static {
         FontsConfig.REGULAR.loadFontToJavafx();
@@ -120,12 +122,15 @@ public class ArkHomeFX extends Application {
                 LoadFXMLResult<ArkHomeFX> fxml1 = FXMLHelper.loadFXML("/UI/ModelsModule.fxml");
                 LoadFXMLResult<ArkHomeFX> fxml2 = FXMLHelper.loadFXML("/UI/BehaviorModule.fxml");
                 LoadFXMLResult<ArkHomeFX> fxml3 = FXMLHelper.loadFXML("/UI/SettingsModule.fxml");
+                LoadFXMLResult<ArkHomeFX> fxml4 = FXMLHelper.loadFXML("/UI/EfficiencyModule.fxml");
                 fxml1.addToNode(rootModule.wrapper1);
                 fxml2.addToNode(rootModule.wrapper2);
                 fxml3.addToNode(rootModule.wrapper3);
+                fxml4.addToNode(rootModule.wrapper4);
                 modelsModule = (ModelsModule) fxml1.initializeWith(this);
                 behaviorModule = (BehaviorModule) fxml2.initializeWith(this);
                 settingsModule = (SettingsModule) fxml3.initializeWith(this);
+                efficiencyModule = (EfficiencyModule) fxml4.initializeWith(this);
             } catch (Exception ex) {
                 Logger.error("Launcher", "Failed to initialize module, details see below.", ex);
             }

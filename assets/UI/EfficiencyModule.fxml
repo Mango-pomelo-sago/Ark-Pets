@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Copyright (c) 2022-2026, Harry Huang
+    At GPL-3.0 License
+-->
+
+<!-- ********* Wrapper 4 : Efficiency ********* -->
+<?import com.jfoenix.controls.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.lang.String?>
+<Pane prefHeight="376.0" prefWidth="460.0" styleClass="wrapper" stylesheets="@Main.css"
+      xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="cn.harryh.arkpets.controllers.EfficiencyModule">
+    <ScrollPane fx:id="moduleScroll" fitToWidth="true" layoutX="10.0" layoutY="11.0" prefHeight="350.0"
+                prefWidth="440.0" styleClass="scroll-v">
+        <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0"
+                    minWidth="0.0" prefWidth="425.0" styleClass="config-field">
+            <VBox>
+                <JFXTabPane fx:id="efficiencyTabPane" maxWidth="430.0" prefWidth="430.0"
+                            tabClosingPolicy="UNAVAILABLE">
+
+                    <!-- ===================== 番茄钟 ===================== -->
+                    <Tab text="番茄钟">
+                        <VBox fx:id="pomodoroBox" spacing="6.0">
+                            <Label fx:id="pomodoroTimeLabel" text="25:00"
+                                   style="-fx-font-size: 34px; -fx-font-weight: bold;"/>
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <Label fx:id="pomodoroPhaseLabel" text="未开始"/>
+                                <HBox fx:id="pomodoroDots" alignment="CENTER_LEFT" spacing="4.0"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                <JFXButton fx:id="pomodoroStartBtn" text="开始">
+                                    <styleClass>
+                                        <String fx:value="btn-primary"/>
+                                    </styleClass>
+                                </JFXButton>
+                                <JFXButton fx:id="pomodoroPauseBtn" text="暂停">
+                                    <styleClass>
+                                        <String fx:value="btn-secondary"/>
+                                    </styleClass>
+                                </JFXButton>
+                                <JFXButton fx:id="pomodoroResetBtn" text="重置">
+                                    <styleClass>
+                                        <String fx:value="btn-secondary"/>
+                                    </styleClass>
+                                </JFXButton>
+                            </HBox>
+                            <Separator/>
+                            <Label styleClass="config-group-title" text="时长设置（分钟）"/>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label minWidth="70.0" text="专注"/>
+                                <JFXSlider fx:id="pomodoroWorkSlider" prefWidth="240.0"/>
+                                <Label fx:id="pomodoroWorkValue" text="25"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label minWidth="70.0" text="短休息"/>
+                                <JFXSlider fx:id="pomodoroShortSlider" prefWidth="240.0"/>
+                                <Label fx:id="pomodoroShortValue" text="5"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label minWidth="70.0" text="长休息"/>
+                                <JFXSlider fx:id="pomodoroLongSlider" prefWidth="240.0"/>
+                                <Label fx:id="pomodoroLongValue" text="15"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label minWidth="70.0" text="长休息间隔"/>
+                                <JFXSlider fx:id="pomodoroEverySlider" prefWidth="240.0"/>
+                                <Label fx:id="pomodoroEveryValue" text="4"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXCheckBox fx:id="pomodoroAutoLoop" mnemonicParsing="false"
+                                             text="自动循环（专注 → 休息 → 专注）"/>
+                            </HBox>
+                        </VBox>
+                    </Tab>
+
+                    <!-- ===================== 待办 ===================== -->
+                    <Tab text="待办">
+                        <VBox fx:id="todoBox" spacing="6.0">
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXTextField fx:id="todoInput" promptText="输入待办事项…" HBox.hgrow="ALWAYS"/>
+                                <JFXButton fx:id="todoAddBtn" text="添加">
+                                    <styleClass>
+                                        <String fx:value="btn-primary"/>
+                                    </styleClass>
+                                </JFXButton>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label text="截止日期（可选）"/>
+                                <DatePicker fx:id="todoDueDate" prefWidth="150.0"/>
+                            </HBox>
+                            <JFXListView fx:id="todoList" prefHeight="230.0" prefWidth="410.0"/>
+                        </VBox>
+                    </Tab>
+
+                    <!-- ===================== 日程 ===================== -->
+                    <Tab text="日程">
+                        <VBox fx:id="scheduleBox" spacing="6.0">
+                            <Label styleClass="config-group-title" text="新增日程"/>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <DatePicker fx:id="scheduleDate" prefWidth="140.0"/>
+                                <Spinner fx:id="scheduleHour" editable="true" prefWidth="72.0"/>
+                                <Label text="时"/>
+                                <Spinner fx:id="scheduleMinute" editable="true" prefWidth="72.0"/>
+                                <Label text="分"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXTextField fx:id="scheduleTitle" promptText="日程标题" HBox.hgrow="ALWAYS"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label text="提醒"/>
+                                <JFXComboBox fx:id="scheduleRemindBefore" prefWidth="130.0"/>
+                                <JFXButton fx:id="scheduleAddBtn" text="添加日程">
+                                    <styleClass>
+                                        <String fx:value="btn-primary"/>
+                                    </styleClass>
+                                </JFXButton>
+                            </HBox>
+                            <Separator/>
+                            <Label styleClass="config-group-title" text="日程列表"/>
+                            <JFXListView fx:id="scheduleList" prefHeight="180.0" prefWidth="410.0"/>
+                        </VBox>
+                    </Tab>
+
+                    <!-- ===================== 提醒 ===================== -->
+                    <Tab text="提醒">
+                        <VBox fx:id="reminderBox" spacing="6.0">
+                            <Label styleClass="config-group-title" text="新增提醒"/>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXTextField fx:id="reminderName" promptText="提醒名称（如：喝水）"
+                                              HBox.hgrow="ALWAYS"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label minWidth="60.0" text="每隔"/>
+                                <JFXSlider fx:id="reminderIntervalSlider" prefWidth="200.0"/>
+                                <Label fx:id="reminderIntervalValue" text="60"/>
+                                <Label text="分钟"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXCheckBox fx:id="reminderUseDaily" mnemonicParsing="false" text="改为每日定时"/>
+                                <Spinner fx:id="reminderHour" editable="true" prefWidth="72.0"/>
+                                <Label text="时"/>
+                                <Spinner fx:id="reminderMinute" editable="true" prefWidth="72.0"/>
+                                <Label text="分"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXButton fx:id="reminderAddBtn" text="添加提醒">
+                                    <styleClass>
+                                        <String fx:value="btn-primary"/>
+                                    </styleClass>
+                                </JFXButton>
+                            </HBox>
+                            <Separator/>
+                            <Label styleClass="config-group-title" text="提醒列表"/>
+                            <VBox fx:id="reminderListBox" spacing="4.0"/>
+                        </VBox>
+                    </Tab>
+
+                    <!-- ===================== 统计 ===================== -->
+                    <Tab text="统计">
+                        <VBox fx:id="statsBox" spacing="6.0">
+                            <Label styleClass="config-group-title" text="今日专注"/>
+                            <Label fx:id="statsToday" text="0 分钟 · 0 个番茄"
+                                   style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                            <Separator/>
+                            <Label styleClass="config-group-title" text="近 7 天"/>
+                            <VBox fx:id="statsWeekBox" spacing="4.0"/>
+                        </VBox>
+                    </Tab>
+
+                </JFXTabPane>
+            </VBox>
+        </AnchorPane>
+    </ScrollPane>
+</Pane>

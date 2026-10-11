@@ -64,6 +64,8 @@ public final class RootModule implements Controller<ArkHomeFX> {
     @FXML
     public AnchorPane wrapper3;
     @FXML
+    public AnchorPane wrapper4;
+    @FXML
     private Pane loadingMask;
     @FXML
     private Pane splashScreen;
@@ -80,6 +82,8 @@ public final class RootModule implements Controller<ArkHomeFX> {
     private Button menuBtn2;
     @FXML
     private Button menuBtn3;
+    @FXML
+    private Button menuBtn4;
     @FXML
     public Button launchBtn;
 
@@ -119,7 +123,7 @@ public final class RootModule implements Controller<ArkHomeFX> {
         // Load misc.
         app.toast = new Toast(toast);
         app.dialogs = new DialogComposer<>(app);
-        List<Node> backgroundNodes = List.of(sidebar, wrapper1, wrapper2, wrapper3);
+        List<Node> backgroundNodes = List.of(sidebar, wrapper1, wrapper2, wrapper3, wrapper4);
         app.dialogs.registerDialog("announceDialog", body, backgroundNodes, "/UI/AnnounceDialog.fxml");
         app.dialogs.registerDialog("downloadDialog", body, backgroundNodes, "/UI/DownloadDialog.fxml");
         app.dialogs.registerDialog("logDialog", body, backgroundNodes, "/UI/LogDialog.fxml");
@@ -311,10 +315,10 @@ public final class RootModule implements Controller<ArkHomeFX> {
     private void initMenuButtons() {
         // Bind the menu buttons to the corresponding modules' wrappers.
         moduleWrapperComposer = new GuiPrefabs.PeerNodeComposer();
-        Button[] menuBtnList = new Button[]{menuBtn1, menuBtn2, menuBtn3};
-        AnchorPane[] wrapperList = new AnchorPane[]{wrapper1, wrapper2, wrapper3};
-        for (int i = 0; i < 3; i++) {
-            // i = {0=Models, 1=Behavior, 2=Settings}
+        Button[] menuBtnList = new Button[]{menuBtn1, menuBtn2, menuBtn3, menuBtn4};
+        AnchorPane[] wrapperList = new AnchorPane[]{wrapper1, wrapper2, wrapper3, wrapper4};
+        for (int i = 0; i < 4; i++) {
+            // i = {0=Models, 1=Behavior, 2=Settings, 3=Efficiency}
             final int finalI = i;
             menuBtnList[i].setOnAction(e -> moduleWrapperComposer.activate(finalI));
             menuBtnList[i].getStyleClass().setAll("menu-btn");
