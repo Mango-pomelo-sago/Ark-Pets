@@ -66,6 +66,10 @@ CI 会做三件事：校验三处版本号与 tag 一致 → `gradle clean distA
 
 ## 陷阱
 
+- **千万别用 `git push --tags`。** `git fetch upstream` 会把上游的 tag（`v3.13.0`、`v3.13.1` 等）
+  拉到本地，而本仓库的 CI 是"tag 推送就建 Release"——`--tags` 会把这些上游 tag 推到 origin，
+  于是为上游版本号建出一堆内容其实是 fork 的 Release，把"最新版"的判断彻底搅乱。
+  只推明确要发的那一个：`git push origin refs/tags/v3.13.2`。
 - **别复用 tag。** Release 是按 tag 名定位的；同一个 tag 重新推送不会覆盖已发布的附件。
   重跑构建任务时，`gh release upload --clobber` 那段兜底会覆盖附件，但前提是 tag 没变。
 - **`[InstallDelete]` 必须清掉旧主 jar。** 主 jar 以版本号命名（`ArkPets-v3.13.2.jar`），
