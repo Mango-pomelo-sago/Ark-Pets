@@ -65,6 +65,8 @@ public final class Const {
     public static final String configInternal   = "/ArkPetsConfigDefault.json";
     public static final String iconFilePng      = "/icons/icon.png";
     public static final String fontDirInternal  = "/fonts/";
+    /** 提醒提示音音效：16 位 PCM WAV，因此仅靠 {@code java.desktop} 即可播放，无需任何解码器依赖。 */
+    public static final String notifySoundInternal = "/audio/notify.wav";
     public static final String pass1VShader     = "shaders/PlainVertex.glsl";
     public static final String pass1FShader     = "shaders/PlainFragment.glsl";
     public static final String pass2VShader     = "shaders/ComplexVertex.glsl";

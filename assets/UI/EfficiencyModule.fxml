@@ -155,6 +155,17 @@
                             <Separator/>
                             <Label styleClass="config-group-title" text="提醒列表"/>
                             <VBox fx:id="reminderListBox" spacing="4.0"/>
+                            <Separator/>
+                            <Label styleClass="config-group-title" text="提示音效"/>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXCheckBox fx:id="soundEnabled" mnemonicParsing="false" text="提醒时播放提示音"/>
+                                <JFXButton fx:id="soundTestBtn" text="试听"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label minWidth="60.0" text="音量"/>
+                                <JFXSlider fx:id="soundVolumeSlider" prefWidth="200.0"/>
+                                <Label fx:id="soundVolumeValue" text="80%"/>
+                            </HBox>
                         </VBox>
                     </Tab>
 

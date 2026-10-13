@@ -14,6 +14,7 @@ import cn.harryh.arkpets.focus.UserData;
 import cn.harryh.arkpets.focus.UserDataStore;
 import cn.harryh.arkpets.utils.GuiComponents;
 import cn.harryh.arkpets.utils.GuiPrefabs;
+import cn.harryh.arkpets.utils.NotificationSound;
 import cn.harryh.arkpets.utils.ScrollUtils;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXCheckBox;
@@ -140,6 +141,16 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
     @FXML
     private VBox reminderListBox;
 
+    // 提示音效
+    @FXML
+    private JFXCheckBox soundEnabled;
+    @FXML
+    private JFXButton soundTestBtn;
+    @FXML
+    private JFXSlider soundVolumeSlider;
+    @FXML
+    private Label soundVolumeValue;
+
     // 统计
     @FXML
     private Label statsToday;
@@ -167,6 +178,7 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
         initTodo();
         initSchedule();
         initReminder();
+        initNotificationSound();
         initStats();
         startTicker();
         ScrollUtils.addSmoothScrolling(moduleScroll);
@@ -650,6 +662,44 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
             return "每日 " + r.dailyTime;
         }
         return "每隔 " + r.intervalMinutes + " 分钟";
+    }
+
+    // ============================================================ 提示音效
+
+    private void initNotificationSound() {
+        soundEnabled.setSelected(app.config.notify_sound_enabled);
+
+        GuiComponents.SliderSetup<Integer> setupVolume = new GuiComponents.SimpleIntegerSliderSetup(soundVolumeSlider);
+        setupVolume
+                .setDisplay(soundVolumeValue, "%d%%", "提醒提示音音量")
+                .setRange(0, 100)
+                .setTicks(20, 10)
+                .setSliderValue(Math.round(app.config.notify_sound_volume * 100))
+                .setOnChanged((observable, oldValue, newValue) -> {
+                    float volume = setupVolume.getValidatedValue() / 100f;
+                    app.config.notify_sound_volume = volume;
+                    app.config.save();
+                    NotificationSound.setVolume(volume);
+                });
+
+        soundEnabled.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            app.config.notify_sound_enabled = newValue;
+            app.config.save();
+            applySoundDisabledState();
+        });
+        soundTestBtn.setOnAction(e -> NotificationSound.play());
+
+        NotificationSound.setVolume(app.config.notify_sound_volume);
+        applySoundDisabledState();
+    }
+
+    /** 关掉提示音后，音量与试听一并变灰。
+     */
+    private void applySoundDisabledState() {
+        boolean disabled = !soundEnabled.isSelected();
+        soundVolumeSlider.setDisable(disabled);
+        soundVolumeValue.setDisable(disabled);
+        soundTestBtn.setDisable(disabled);
     }
 
     // ============================================================ 统计

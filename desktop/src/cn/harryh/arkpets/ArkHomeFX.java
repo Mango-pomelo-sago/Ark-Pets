@@ -16,6 +16,7 @@ import cn.harryh.arkpets.utils.FXMLHelper;
 import cn.harryh.arkpets.utils.FXMLHelper.LoadFXMLResult;
 import cn.harryh.arkpets.utils.GuiComponents.Toast;
 import cn.harryh.arkpets.utils.Logger;
+import cn.harryh.arkpets.utils.NotificationSound;
 import cn.harryh.arkpets.utils.SentryHelper;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -141,6 +142,12 @@ public class ArkHomeFX extends Application {
             SentryHelper.setEnable(config.enable_telemetry);
             SentryHelper.consumePendingWal();
 
+            // Warm up the notification sound off the JavaFX thread, so that the first reminder is
+            // not delayed by decoding it.
+            Thread soundLoader = new Thread(NotificationSound::preload, "notification-sound-loader");
+            soundLoader.setDaemon(true);
+            soundLoader.start();
+
             Logger.info("Launcher", "Finished starting");
         }, Duration.ZERO, durationFast);
     }
@@ -153,6 +160,7 @@ public class ArkHomeFX extends Application {
         }
         SocketServer.getInstance().stopServer();
         ProcessPool.getInstance().shutdown();
+        NotificationSound.release();
         Logger.debug("Launcher", "Finished stopping");
         SentryHelper.endDesktopSession();
         SentryHelper.consumePendingWal();
