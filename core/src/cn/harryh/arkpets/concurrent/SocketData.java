@@ -25,7 +25,9 @@ public class SocketData implements Serializable {
         CHANGE_STAGE,
         HANDSHAKE_REQUEST,
         HANDSHAKE_RESPONSE,
-        ACTIVATE_LAUNCHER
+        ACTIVATE_LAUNCHER,
+        /** 让桌宠在自身旁边弹出一则提示气泡，文本由 {@link #msg} 承载。 */
+        SHOW_TIP
     }
 
     /** The UUID for identification.
@@ -67,6 +69,10 @@ public class SocketData implements Serializable {
 
     public static SocketData ofOperation(UUID uuid, Operation operation) {
         return new SocketData(uuid, operation, null);
+    }
+
+    public static SocketData ofOperation(UUID uuid, Operation operation, String msg) {
+        return new SocketData(uuid, operation, msg == null ? null : StringDTO.of(msg));
     }
 
 

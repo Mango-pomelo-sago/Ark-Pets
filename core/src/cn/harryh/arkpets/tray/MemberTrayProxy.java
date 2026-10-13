@@ -91,6 +91,12 @@ public class MemberTrayProxy extends MemberTray {
     }
 
     @Override
+    public void showTip(String text) {
+        Logger.debug("ProxyTray", "Forwarding tip: " + text);
+        session.send(SocketData.ofOperation(uuid, SocketData.Operation.SHOW_TIP, text));
+    }
+
+    @Override
     public void remove() {
         hostTray.removeMemberTray(popMenu);
     }

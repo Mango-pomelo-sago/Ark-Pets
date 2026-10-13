@@ -78,4 +78,9 @@ public abstract class MemberTray {
     abstract public void remove();
 
     abstract public void sendOperation(SocketData.Operation operation);
+
+    /** Asks this ArkPets to pop up a tip bubble next to itself.
+     * @param text The text to display.
+     */
+    abstract public void showTip(String text);
 }

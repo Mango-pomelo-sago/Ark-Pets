@@ -29,6 +29,7 @@ public class MemberTrayImpl extends MemberTray {
     private final JDialog popWindow;
     private final JPopupMenu popMenu;
     private TrayIcon icon;
+    private TipWindow tipWindow;
     public AnimData keepAnim;
 
     /** Initializes a per-character tray icon instance for an ArkPets. <br/>
@@ -152,9 +153,22 @@ public class MemberTrayImpl extends MemberTray {
     }
 
     @Override
+    public void showTip(String text) {
+        Logger.info("MemberTray", "Tip: " + text);
+        // Called from the socket thread, so hand the work over to the event dispatch thread.
+        SwingUtilities.invokeLater(() -> {
+            if (tipWindow == null)
+                tipWindow = new TipWindow(arkPets::getWindowScreenRect);
+            tipWindow.show(text);
+        });
+    }
+
+    @Override
     public void remove() {
         popMenu.removeAll();
         popWindow.dispose();
+        if (tipWindow != null)
+            tipWindow.dispose();
         client.disconnect();
     }
 

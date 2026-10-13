@@ -110,6 +110,7 @@ public class SocketClient {
                         case TRANSPARENT_MODE       -> memberTray.onTransparentEn();
                         case NO_TRANSPARENT_MODE    -> memberTray.onTransparentDis();
                         case CHANGE_STAGE           -> memberTray.onChangeStage();
+                        case SHOW_TIP               -> memberTray.showTip(socketData.getMsgString());
                     }
                 }
             } catch (JSONException ignored) {

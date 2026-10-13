@@ -43,6 +43,7 @@ public class ArkPets extends InputApplicationAdaptor {
 
     private HWndCtrl hWndMine;
     private List<? extends HWndCtrl> hWndList;
+    private volatile HWndCtrl.WindowRect latestWindowRect = new HWndCtrl.WindowRect();
     private final Cached<HWndCtrl> hWndTopmostGetter;
     private final Cached<Boolean> hWndTransparentSetter;
     private final Cached<HWndCtrl.WindowRect> hWndPosSetter;
@@ -117,6 +118,7 @@ public class ArkPets extends InputApplicationAdaptor {
         if (config.window_style_toolwindow)
             hWndMine.setTaskbar(false);
         updateWindow();
+        syncWindowScreenRect();
 
         // 6.Tray icon setup
         tray = new MemberTrayImpl(this, new SocketClient());
@@ -214,6 +216,14 @@ public class ArkPets extends InputApplicationAdaptor {
     }
 
     /* INTERFACES */
+    /** Gets the current on-screen rectangle of this window, in physical pixels.
+     * Safe to read from any thread.
+     * @return The window rectangle; all zeros until the window has been positioned once.
+     */
+    public HWndCtrl.WindowRect getWindowScreenRect() {
+        return latestWindowRect;
+    }
+
     public boolean canChangeStage() {
         return behavior != null && behavior.getStages().size() > 1;
     }
@@ -378,7 +388,22 @@ public class ArkPets extends InputApplicationAdaptor {
             rect = hWndPosSetter.getValue();
             hWndMine.setWindowPosition(top,
                     rect.left(), rect.top(), rect.width(), rect.height());
+            syncWindowScreenRect();
         }
+    }
+
+    /** Refreshes {@link #latestWindowRect} with the real on-screen rectangle of this window.
+     * Called only on the frames where the window position actually changed, so it costs
+     * nothing at rest.
+     */
+    private void syncWindowScreenRect() {
+        if (hWndMine == null)
+            return;
+        HWndCtrl fresh = hWndMine.updated();
+        if (fresh == null)
+            return;
+        latestWindowRect = new HWndCtrl.WindowRect(
+                fresh.posTop, fresh.posBottom, fresh.posLeft, fresh.posRight);
     }
 
     private RelativeWindowPosition getUnderlyingRWP() {
