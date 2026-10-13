@@ -4,7 +4,7 @@
 ; Download Inno Setup: https://jrsoftware.org/isdl.php
 
 #define MyAppName "ArkPets"
-#define MyAppVersion "3.13.1"
+#define MyAppVersion "3.13.2"
 #define MyAppPublisher "Harry Huang"
 #define MyAppURL "https://arkpets.harryh.cn/"
 
@@ -115,7 +115,10 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; Tasks: d
 Filename: "{app}\{#MyAppName}.exe"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
 
 [InstallDelete]
-Type: files; Name: "{app}\app\desktop*.jar"
+; Remove the previous main jar before copying the new one, otherwise every update leaves
+; the old ~78 MB jar behind. The jar is named after the app version (e.g. ArkPets-v3.13.2.jar),
+; so a version-pinned pattern would never match; {app}\app\ only ever holds that single jar.
+Type: files; Name: "{app}\app\*.jar"
 
 [UninstallDelete]
 Type: files; Name: "{app}\ArkPetsConfig.json"

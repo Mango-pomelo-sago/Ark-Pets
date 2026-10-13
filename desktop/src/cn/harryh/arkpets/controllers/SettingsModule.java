@@ -11,14 +11,10 @@ import cn.harryh.arkpets.guitasks.AppInstallTask;
 import cn.harryh.arkpets.guitasks.GuiTask;
 import cn.harryh.arkpets.guitasks.requests.CheckAppUpdateTask;
 import cn.harryh.arkpets.guitasks.requests.DownloadAppTask;
-import cn.harryh.arkpets.guitasks.requests.McCheckAppUpdateTask;
-import cn.harryh.arkpets.network.SourceStrategy;
-import cn.harryh.arkpets.network.api.McQueryVersion;
 import cn.harryh.arkpets.platform.StartupConfig;
 import cn.harryh.arkpets.tray.HostTray;
 import cn.harryh.arkpets.utils.*;
 import cn.harryh.arkpets.utils.GuiComponents.*;
-import com.alibaba.fastjson2.JSONObject;
 import com.badlogic.gdx.graphics.Color;
 import com.jfoenix.controls.JFXDialog;
 import javafx.application.Platform;
@@ -495,7 +491,7 @@ public final class SettingsModule implements Controller<ArkHomeFX> {
     private void initAbout() {
         aboutQueryUpdate.setOnMouseClicked(e -> {
             /* Foreground check app update */
-            new CheckAppUpdateTask(app.body, GuiTask.GuiTaskStyle.COMMON, "manual") {
+            new CheckAppUpdateTask(app.body, GuiTask.GuiTaskStyle.COMMON) {
                 @Override
                 protected void onHasNewStableVersion(Version stableVersion) {
                     if (style == GuiTaskStyle.HIDDEN)
@@ -680,41 +676,7 @@ public final class SettingsModule implements Controller<ArkHomeFX> {
         ss.start();
     }
 
-    private void assertDownloadSource(boolean doDoubleCheck, Runnable onDone) {
-        SourceStrategy.getStrategy("AppDownload").clearPrimarySource();
-        String cdk;
-        if ((cdk = app.config.getMcCdk()) != null) {
-            Logger.debug("Updater", "Attempting using CDK to fetch resource");
-            new McCheckAppUpdateTask(app.body, GuiTask.GuiTaskStyle.STRICT, cdk) {
-                @Override
-                protected void onReceivedData(JSONObject json) {
-                    McQueryVersion value = json.toJavaObject(McQueryVersion.class);
-                    try {
-                        value.raiseForCode();
-                        SourceStrategy.getStrategy("AppDownload").setPrimarySource("MirrorChyan", value.data.url);
-
-                        Logger.info("Updater", "CDK assertion passed");
-                        if (onDone != null)
-                            onDone.run();
-                    } catch (McQueryVersion.McException e) {
-                        Logger.warn("Updater", "CDK assertion not passed, " + e.getMessage());
-                        if (doDoubleCheck)
-                            app.dialogs.popDialog("downloadDialog", (Runnable) () -> assertDownloadSource(false, onDone));
-                        else if (onDone != null)
-                            onDone.run();
-                    }
-                }
-            }.start();
-        } else {
-            Logger.info("Updater", "CDK assertion not passed due to not set");
-            if (doDoubleCheck)
-                app.dialogs.popDialog("downloadDialog", (Runnable) () -> assertDownloadSource(false, onDone));
-            else if (onDone != null)
-                onDone.run();
-        }
-    }
-
-    private void executeAppUpdate() {
+    public void executeAppUpdate() {
         if (!StartupConfig.getInstance().isAutoUpdateAvailable()) {
             // Maybe the user is not an installer user
             Logger.warn("Updater", "Maybe auto update is not available");
@@ -722,10 +684,14 @@ public final class SettingsModule implements Controller<ArkHomeFX> {
                     GuiPrefabs.Icons.getIcon(GuiPrefabs.Icons.SVG_INFO_ALT, GuiPrefabs.COLOR_INFO),
                     "自动更新不可用",
                     "请您手动下载新版程序文件并进行安装",
-                    "您使用的似乎不是安装包版本的 ArkPets，或者您的系统环境存在限制，所以无法自动更新哦~ 是否前往 ArkPets 官网下载？",
+                    "您使用的似乎不是安装包版本的 ArkPets，或者您的系统环境存在限制，所以无法自动更新哦~ 是否前往下载页面？",
                     () -> app.popBrowser(PathConfig.urlOfficialDownloadPage)).show();
         } else {
-            assertDownloadSource(true, () -> new DownloadAppTask(app.body, GuiTask.GuiTaskStyle.COMMON) {
+            // The download source was already pointed at this fork's release asset by
+            // CheckAppUpdateTask, so the download can start right away. The MirrorChyan CDN step
+            // that used to sit here is deliberately skipped: its CDK is issued by the upstream
+            // author, and without one it popped a "enter your CDK" dialog on every single update.
+            new DownloadAppTask(app.body, GuiTask.GuiTaskStyle.COMMON) {
                 @Override
                 protected void onDownloadedFile(File file) {
                     Logger.info("Updater", "Closing all core instances");
@@ -740,7 +706,7 @@ public final class SettingsModule implements Controller<ArkHomeFX> {
                         }
                     }.start();
                 }
-            }.start());
+            }.start();
         }
     }
 

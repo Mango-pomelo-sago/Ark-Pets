@@ -17,6 +17,8 @@ import cn.harryh.arkpets.utils.GuiComponents.Handbook;
 import cn.harryh.arkpets.utils.GuiComponents.Toast;
 import cn.harryh.arkpets.utils.GuiPrefabs;
 import cn.harryh.arkpets.utils.Logger;
+import cn.harryh.arkpets.utils.Version;
+import com.jfoenix.controls.JFXDialog;
 import javafx.application.Platform;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
@@ -220,7 +222,20 @@ public final class RootModule implements Controller<ArkHomeFX> {
                 .addBackupSource("GitHub", "https://raw.githubusercontent.com/isHarryh/Ark-Models/main/models_data.json")
                 .addBackupSource("GHProxy", "https://ghproxy.harryh.cn/https://raw.githubusercontent.com/isHarryh/Ark-Models/main/models_data.json");
 
-        new CheckAppUpdateTask(app.body, GuiTask.GuiTaskStyle.HIDDEN, "auto").start();
+        new CheckAppUpdateTask(app.body, GuiTask.GuiTaskStyle.HIDDEN) {
+            @Override
+            protected void onHasNewStableVersion(Version stableVersion) {
+                // Ask the user right away instead of only lighting up the notice bar, which lives
+                // inside the "options" page and is easy to never open.
+                JFXDialog dialog = GuiPrefabs.Dialogs.createConfirmDialog(app.body,
+                        GuiPrefabs.Icons.getIcon(GuiPrefabs.Icons.SVG_UPDATE, GuiPrefabs.COLOR_INFO),
+                        "发现新版本",
+                        "ArkPets " + stableVersion + " 已发布",
+                        "当前版本 " + appVersion + "，是否现在下载并安装？",
+                        () -> app.settingsModule.executeAppUpdate());
+                dialog.show();
+            }
+        }.start();
     }
 
     /** Plays the exit animation, deletes temp files, then invokes {@link Platform#exit()}.

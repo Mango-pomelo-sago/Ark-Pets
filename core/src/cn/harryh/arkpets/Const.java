@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 public final class Const {
     // App version
-    public static final Version appVersion              = new Version(3, 13, 1);
+    public static final Version appVersion              = new Version(3, 13, 2);
     public static final Version datasetLowestVersion    = new Version(2, 2, 0);
 
     // App name
@@ -101,14 +101,22 @@ public final class Const {
 
 
     /** Paths presets definition class.
+     * <p>
+     * This fork takes over the update channel: the app now updates itself from its own GitHub
+     * Releases instead of the upstream ones, so the download/repo entries below point at the fork.
+     * {@code urlOfficialApi} and the two {@code urlOfficial*Page} entries are deliberately left
+     * alone — they feed the upstream announcement banner and the upstream documentation site,
+     * neither of which this fork replaces.
      */
     public static class PathConfig {
         public static final String urlOfficialApi           = "https://arkpets.harryh.cn/api/client";
-        public static final String urlOfficialDownloadPage  = "https://arkpets.harryh.cn/downloads?from=client";
+        public static final String urlOfficialDownloadPage  = "https://github.com/Mango-pomelo-sago/Ark-Pets/releases/latest";
         public static final String urlOfficialHelpPage      = "https://arkpets.harryh.cn/help?from=client";
         public static final String urlOfficialHomePage      = "https://arkpets.harryh.cn/?from=client";
-        public static final String urlRepoPage              = "https://github.com/isHarryh/Ark-Pets";
-        public static final String urlRepoReadmePage        = "https://github.com/isHarryh/Ark-Pets#readme";
+        /** GitHub REST endpoint returning this fork's newest release, including its asset list. */
+        public static final String urlRepoApiLatestRelease  = "https://api.github.com/repos/Mango-pomelo-sago/Ark-Pets/releases/latest";
+        public static final String urlRepoPage              = "https://github.com/Mango-pomelo-sago/Ark-Pets";
+        public static final String urlRepoReadmePage        = "https://github.com/Mango-pomelo-sago/Ark-Pets#readme";
         public static final String urlMirrorChyan           = "https://mirrorchyan.com/";
         public static final String urlWikiPrefix            = "https://prts.wiki/w/";
         public static final String tempDirPath              = "temp/";
