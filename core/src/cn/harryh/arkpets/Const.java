@@ -54,8 +54,8 @@ public final class Const {
     public static final Duration durationFast   = new Duration(150);
     public static final Duration durationNormal = new Duration(300);
     public static final Duration durationLong   = new Duration(1500);
-    /** 桌宠头顶提示气泡的停留时长。 */
-    public static final Duration durationTip    = new Duration(4000);
+    // Note: the tip bubble deliberately has no duration constant. It stays until the user clicks
+    // it away, so there is nothing to time out.
 
     // Encoding presets
     public static final String charsetDefault   = "UTF-8";

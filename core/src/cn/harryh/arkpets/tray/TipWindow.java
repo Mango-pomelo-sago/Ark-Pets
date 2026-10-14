@@ -3,7 +3,6 @@
  */
 package cn.harryh.arkpets.tray;
 
-import cn.harryh.arkpets.Const;
 import cn.harryh.arkpets.platform.HWndCtrl;
 
 import javax.swing.*;
@@ -20,8 +19,9 @@ import java.util.function.Supplier;
 /** A small always-on-top bubble that shows a short piece of text next to an ArkPets window.
  * <p>
  * It is an undecorated {@link JWindow} so that it never steals focus and never shows up in the
- * taskbar. While visible it follows the ArkPets window, and it hides itself after
- * {@link Const#durationTip}. All of its methods may be called from any thread.
+ * taskbar. While visible it follows the ArkPets window. It stays there until the user clicks it
+ * away, so the reminder is never missed by looking elsewhere for a moment; {@link #setOnDismiss}
+ * reports that click to whoever queued the text. All of its methods may be called from any thread.
  * @since ArkPets 3.13
  */
 public class TipWindow {
@@ -55,7 +55,8 @@ public class TipWindow {
     private final BubblePanel panel;
     private final JLabel label;
     private final Timer followTimer;
-    private final Timer hideTimer;
+    /** Run after the user clicks the bubble away, so a queue can bring up the next reminder. */
+    private Runnable onDismiss;
     /** Whether the bubble's tail points down (i.e. the bubble sits above the ArkPets window). */
     private boolean tailDown = true;
     /** Whether per-pixel translucency is available; without it the rounded shape is given up. */
@@ -101,19 +102,23 @@ public class TipWindow {
             @Override
             public void mouseClicked(MouseEvent e) {
                 hide();
+                if (onDismiss != null)
+                    onDismiss.run();
             }
         };
         panel.addMouseListener(dismiss);
         label.addMouseListener(dismiss);
+        // Nothing removes the bubble on its own, so point out that clicking it is the way out.
+        Cursor hand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+        panel.setCursor(hand);
+        label.setCursor(hand);
         window.setContentPane(panel);
 
         followTimer = new Timer(FOLLOW_INTERVAL_MS, e -> updateLocation());
-        hideTimer = new Timer((int) Const.durationTip.toMillis(), e -> hide());
-        hideTimer.setRepeats(false);
         updateInsets();
     }
 
-    /** Shows the bubble with the given text, restarting its dismiss countdown.
+    /** Shows the bubble with the given text. It stays until the user clicks it away.
      * @param text The text to display; multi-line text is supported.
      */
     public void show(String text) {
@@ -133,7 +138,16 @@ public class TipWindow {
         window.setAlwaysOnTop(true);
         window.toFront();
         followTimer.restart();
-        hideTimer.restart();
+    }
+
+    /** Sets what to run once the user has clicked the bubble away. May be called from any thread.
+     * <p>
+     * It is deliberately not run by {@link #hide()} or {@link #dispose()}: those are also how the
+     * owner tears the bubble down, and that must not be mistaken for the user acknowledging it.
+     * @param onDismiss The action to run, or {@code null} for none.
+     */
+    public void setOnDismiss(Runnable onDismiss) {
+        this.onDismiss = onDismiss;
     }
 
     /** Hides the bubble immediately. */
@@ -143,7 +157,6 @@ public class TipWindow {
             return;
         }
         followTimer.stop();
-        hideTimer.stop();
         window.setVisible(false);
     }
 
@@ -155,7 +168,6 @@ public class TipWindow {
         }
         disposed = true;
         followTimer.stop();
-        hideTimer.stop();
         window.dispose();
     }
 

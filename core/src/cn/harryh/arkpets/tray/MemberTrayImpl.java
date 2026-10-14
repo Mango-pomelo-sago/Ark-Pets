@@ -16,6 +16,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,6 +32,11 @@ public class MemberTrayImpl extends MemberTray {
     private final JPopupMenu popMenu;
     private TrayIcon icon;
     private TipWindow tipWindow;
+    /** Reminders waiting for their turn. Only one bubble is on screen at a time, and only the
+     * event dispatch thread ever touches this. */
+    private final Deque<String> tipQueue = new ArrayDeque<>();
+    /** Whether a reminder is currently waiting to be acknowledged by the user. */
+    private boolean tipShowing = false;
     public AnimData keepAnim;
 
     /** Initializes a per-character tray icon instance for an ArkPets. <br/>
@@ -155,20 +162,46 @@ public class MemberTrayImpl extends MemberTray {
     @Override
     public void showTip(String text) {
         Logger.info("MemberTray", "Tip: " + text);
+        if (text == null || text.isEmpty())
+            return;
         // Called from the socket thread, so hand the work over to the event dispatch thread.
         SwingUtilities.invokeLater(() -> {
-            if (tipWindow == null)
-                tipWindow = new TipWindow(arkPets::getWindowScreenRect);
-            tipWindow.show(text);
+            tipQueue.addLast(text);
+            pumpTipQueue();
         });
+    }
+
+    /** Brings up the next queued reminder, unless one is still waiting to be acknowledged.
+     * <p>
+     * Must be called on the event dispatch thread.
+     */
+    private void pumpTipQueue() {
+        if (tipShowing || tipQueue.isEmpty())
+            return;
+        if (tipWindow == null) {
+            tipWindow = new TipWindow(arkPets::getWindowScreenRect);
+            tipWindow.setOnDismiss(this::onTipDismissed);
+        }
+        tipShowing = true;
+        tipWindow.show(tipQueue.pollFirst());
+    }
+
+    /** Called when the user has acknowledged the reminder on screen, which frees the next one. */
+    private void onTipDismissed() {
+        tipShowing = false;
+        pumpTipQueue();
     }
 
     @Override
     public void remove() {
         popMenu.removeAll();
         popWindow.dispose();
-        if (tipWindow != null)
+        if (tipWindow != null) {
             tipWindow.dispose();
+            tipWindow = null;
+        }
+        tipQueue.clear();
+        tipShowing = false;
         client.disconnect();
     }
 

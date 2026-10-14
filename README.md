@@ -26,7 +26,8 @@
 </div>
 
 > **本仓库是 fork。** 基于 [isHarryh/Ark-Pets](https://github.com/isHarryh/Ark-Pets) 的 `v3.x`，额外实现了
-> 效率模块（番茄钟 / 待办 / 日程 / 提醒 / 统计）、桌宠头顶的提醒气泡，以及提醒时的提示音效。
+> 效率模块（番茄钟 / 待办 / 日程 / 提醒 / 统计）、桌宠头顶的提醒气泡（**须手动点击才消失**，多条提醒会依次排队），
+> 以及提醒时的提示音效。
 >
 > 与上游最主要的区别是**更新来源**：程序内的自动更新只认本仓库的 GitHub Release，不会再去安装官方版本，
 > 所以请从 [本仓库的 Releases](https://github.com/Mango-pomelo-sago/Ark-Pets/releases) 下载安装包。
