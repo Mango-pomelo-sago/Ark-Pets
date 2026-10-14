@@ -67,7 +67,7 @@ import static cn.harryh.arkpets.Const.durationLong;
 import static cn.harryh.arkpets.Const.durationNormal;
 
 
-/** "效率"模块的控制器：番茄钟 / 待办 / 日程 / 提醒 / 统计。
+/** "效率"模块的控制器：番茄钟 / 待办 / 日程 / 提醒 / 统计 / 音乐。
  * @since ArkPets 3.13
  */
 public final class EfficiencyModule implements Controller<ArkHomeFX> {
