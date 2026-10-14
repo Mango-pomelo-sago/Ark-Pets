@@ -17,6 +17,8 @@ public class UserData {
     public List<ReminderItem> reminders = new ArrayList<>();
     public PomodoroSettings pomodoro = new PomodoroSettings();
     public List<DayStat> stats = new ArrayList<>();
+    public List<MusicTrack> playlist = new ArrayList<>();
+    public MusicSettings music = new MusicSettings();
 
     /** 修正反序列化后可能为 null 的字段，使其可直接使用。 */
     public void normalize() {
@@ -25,5 +27,7 @@ public class UserData {
         if (reminders == null) reminders = new ArrayList<>();
         if (pomodoro == null) pomodoro = new PomodoroSettings();
         if (stats == null) stats = new ArrayList<>();
+        if (playlist == null) playlist = new ArrayList<>();
+        if (music == null) music = new MusicSettings();
     }
 }

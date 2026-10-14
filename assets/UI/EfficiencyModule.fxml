@@ -181,6 +181,60 @@
                         </VBox>
                     </Tab>
 
+                    <!-- ===================== 音乐 ===================== -->
+                    <Tab text="音乐">
+                        <VBox fx:id="musicBox" spacing="6.0">
+                            <Label styleClass="config-group-title" text="本地播放列表"/>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXButton fx:id="musicAddFilesBtn" text="添加文件">
+                                    <styleClass>
+                                        <String fx:value="btn-primary"/>
+                                    </styleClass>
+                                </JFXButton>
+                                <JFXButton fx:id="musicAddFolderBtn" text="添加文件夹">
+                                    <styleClass>
+                                        <String fx:value="btn-secondary"/>
+                                    </styleClass>
+                                </JFXButton>
+                                <JFXButton fx:id="musicClearBtn" text="清空">
+                                    <styleClass>
+                                        <String fx:value="btn-secondary"/>
+                                    </styleClass>
+                                </JFXButton>
+                            </HBox>
+                            <VBox fx:id="musicListBox" spacing="4.0"/>
+                            <Separator/>
+                            <Label styleClass="config-group-title" text="播放控制"/>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXButton fx:id="musicPrevBtn" text="上一首">
+                                    <styleClass>
+                                        <String fx:value="btn-secondary"/>
+                                    </styleClass>
+                                </JFXButton>
+                                <JFXButton fx:id="musicPlayPauseBtn" text="播放">
+                                    <styleClass>
+                                        <String fx:value="btn-primary"/>
+                                    </styleClass>
+                                </JFXButton>
+                                <JFXButton fx:id="musicNextBtn" text="下一首">
+                                    <styleClass>
+                                        <String fx:value="btn-secondary"/>
+                                    </styleClass>
+                                </JFXButton>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label fx:id="musicTimeLabel" minWidth="100.0" text="00:00 / 00:00"/>
+                                <JFXSlider fx:id="musicProgressSlider" prefWidth="290.0"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <Label minWidth="60.0" text="音量"/>
+                                <JFXSlider fx:id="musicVolumeSlider" prefWidth="200.0"/>
+                                <Label fx:id="musicVolumeValue" text="80%"/>
+                            </HBox>
+                            <JFXCheckBox fx:id="musicAutoplay" mnemonicParsing="false" text="专注时自动播放"/>
+                        </VBox>
+                    </Tab>
+
                 </JFXTabPane>
             </VBox>
         </AnchorPane>

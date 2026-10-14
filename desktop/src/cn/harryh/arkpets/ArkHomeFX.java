@@ -16,6 +16,7 @@ import cn.harryh.arkpets.utils.FXMLHelper;
 import cn.harryh.arkpets.utils.FXMLHelper.LoadFXMLResult;
 import cn.harryh.arkpets.utils.GuiComponents.Toast;
 import cn.harryh.arkpets.utils.Logger;
+import cn.harryh.arkpets.utils.MusicPlayer;
 import cn.harryh.arkpets.utils.NotificationSound;
 import cn.harryh.arkpets.utils.SentryHelper;
 import javafx.application.Application;
@@ -161,6 +162,7 @@ public class ArkHomeFX extends Application {
         SocketServer.getInstance().stopServer();
         ProcessPool.getInstance().shutdown();
         NotificationSound.release();
+        MusicPlayer.release();
         Logger.debug("Launcher", "Finished stopping");
         SentryHelper.endDesktopSession();
         SentryHelper.consumePendingWal();

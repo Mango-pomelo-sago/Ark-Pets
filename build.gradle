@@ -70,6 +70,11 @@ project(":core") {
         api "org.openjfx:javafx-controls:$javaFXVersion:win"
         api "org.openjfx:javafx-graphics:$javaFXVersion:win"
         api "org.openjfx:javafx-fxml:$javaFXVersion:win"
+        // javafx-media brings the decoder used by the music player in the efficiency module. It is
+        // picked over the javax.sound SPI decoders (mp3spi and friends) on purpose: distJar flattens
+        // every jar with duplicatesStrategy = EXCLUDE and nothing merges META-INF/services, so an
+        // SPI provider registered that way would be a coin flip. Media decodes MP3/AAC on its own.
+        api "org.openjfx:javafx-media:$javaFXVersion:win"
         // JFoenix
         api "com.jfoenix:jfoenix:9.0.1"
         // FastJson
