@@ -19,7 +19,7 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: "org.openjfx.javafxplugin"
 
-    version = "3.13.2"
+    version = "3.13.3"
     ext {
         // App Metadata
         appName = "ArkPets"

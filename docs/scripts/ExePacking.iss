@@ -4,7 +4,7 @@
 ; Download Inno Setup: https://jrsoftware.org/isdl.php
 
 #define MyAppName "ArkPets"
-#define MyAppVersion "3.13.2"
+#define MyAppVersion "3.13.3"
 #define MyAppPublisher "Harry Huang"
 #define MyAppURL "https://arkpets.harryh.cn/"
 
