@@ -129,5 +129,11 @@ Type: filesandordirs; Name: "{app}\temp"
 Type: filesandordirs; Name: "{app}\models"
 Type: filesandordirs; Name: "{app}\models_enemies"
 Type: filesandordirs; Name: "{app}\models_illust"
+; Audio imported from Bilibili links lives here. Everything under {app}\music was downloaded by
+; this app - songs the user adds themselves live wherever they picked them, outside {app} - so
+; removing it takes nothing but app-created data, exactly like the models/ and temp/ lines above.
+; Without this line uninstall would claim to clean up while silently orphaning the downloads, and
+; UserData.json (deleted with ArkPetsConfig.json) would be the only thing left pointing at them.
+Type: filesandordirs; Name: "{app}\music"
 Type: files; Name: "{userstartup}\ArkPetsStartup.lnk"
 Type: files; Name: "{userstartup}\ArkPetsStartupService.vbs"

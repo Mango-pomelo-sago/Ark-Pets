@@ -10,6 +10,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +36,55 @@ public class Connections {
             if (trustAllUnsafe) {
                 connection.setSSLSocketFactory(TrustUtils.getTrustAnySSLSocketFactory());
                 connection.setHostnameVerifier(TrustUtils.getTrustAnyHostnameVerifier());
+            }
+            connection.setConnectTimeout(connectTimeout);
+            connection.setReadTimeout(readTimeout);
+            connection.connect();
+            return connection;
+        } catch (IOException e) {
+            try {
+                if (connection != null && connection.getInputStream() != null)
+                    connection.getInputStream().close();
+            } catch (Exception ignored) {
+            }
+            throw e;
+        }
+    }
+
+    /** Creates an HTTP connection of the given URL with extra request headers, and then try to connect it.
+     * <p>
+     * This differs from {@link #createHttpsConnection(URL, int, int)} in two ways that matter for
+     * third-party CDNs:
+     * <ul>
+     *   <li>Request headers can be supplied. They have to be set <em>before</em> {@code connect()},
+     *       which is why a separate method is needed rather than a setter on the returned instance.</li>
+     *   <li>The declared return type is {@link HttpURLConnection}, and the SSL tweaks are applied
+     *       only when the connection really is an {@link HttpsURLConnection}. A plain {@code http://}
+     *       URL therefore works instead of failing with {@link ClassCastException} inside the
+     *       {@code (HttpsURLConnection)} cast that the other overloads perform.</li>
+     * </ul>
+     * @param url The URL to connect.
+     * @param headers Extra request headers to send, or {@code null} for none. Null keys/values are skipped.
+     * @param connectTimeout The timeout for connecting (ms).
+     * @param readTimeout The timeout for reading data (ms).
+     * @return The connection instance which has finished connecting.
+     * @throws IOException If I/O error occurs. Typically, when a timeout occurred.
+     */
+    public static HttpURLConnection createHttpConnection(URL url, Map<String, String> headers,
+                                                         int connectTimeout, int readTimeout)
+            throws IOException {
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) url.openConnection();
+            if (connection instanceof HttpsURLConnection https && trustAllUnsafe) {
+                https.setSSLSocketFactory(TrustUtils.getTrustAnySSLSocketFactory());
+                https.setHostnameVerifier(TrustUtils.getTrustAnyHostnameVerifier());
+            }
+            if (headers != null) {
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    if (header.getKey() != null && header.getValue() != null)
+                        connection.setRequestProperty(header.getKey(), header.getValue());
+                }
             }
             connection.setConnectTimeout(connectTimeout);
             connection.setReadTimeout(readTimeout);

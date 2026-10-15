@@ -120,6 +120,11 @@ public final class Const {
         public static final String urlMirrorChyan           = "https://mirrorchyan.com/";
         public static final String urlWikiPrefix            = "https://prts.wiki/w/";
         public static final String tempDirPath              = "temp/";
+        /** 从 B 站链接导入的音频落盘位置。与 {@code models/} 同级，位于工作目录（安装目录）下。
+         * <p>
+         * 刻意不放在 {@code temp/}：那里由 {@code DeleteTempFilesTask} 在退出时按 24 小时
+         * 规则递归清理，音频会被无声删掉。 */
+        public static final String musicDirPath             = "music/";
         public static final String fileModelsZipName        = "ArkModels";
         public static final String fileModelsDataPath       = "models_data.json";
         public static final String tempModelsUnzipDirPath   = tempDirPath + "models_unzipped/";

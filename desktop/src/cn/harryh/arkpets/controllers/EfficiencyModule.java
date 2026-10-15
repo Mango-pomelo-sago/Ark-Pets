@@ -4,6 +4,7 @@
 package cn.harryh.arkpets.controllers;
 
 import cn.harryh.arkpets.ArkHomeFX;
+import cn.harryh.arkpets.Const;
 import cn.harryh.arkpets.focus.DayStat;
 import cn.harryh.arkpets.focus.MusicSettings;
 import cn.harryh.arkpets.focus.MusicTrack;
@@ -14,8 +15,11 @@ import cn.harryh.arkpets.focus.ScheduleEvent;
 import cn.harryh.arkpets.focus.TodoItem;
 import cn.harryh.arkpets.focus.UserData;
 import cn.harryh.arkpets.focus.UserDataStore;
+import cn.harryh.arkpets.guitasks.GuiTask;
+import cn.harryh.arkpets.guitasks.requests.ImportBiliAudioTask;
 import cn.harryh.arkpets.utils.GuiComponents;
 import cn.harryh.arkpets.utils.GuiPrefabs;
+import cn.harryh.arkpets.utils.Logger;
 import cn.harryh.arkpets.utils.MusicPlayer;
 import cn.harryh.arkpets.utils.NotificationSound;
 import cn.harryh.arkpets.utils.ScrollUtils;
@@ -52,6 +56,8 @@ import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -175,6 +181,10 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
     private JFXButton musicAddFolderBtn;
     @FXML
     private JFXButton musicClearBtn;
+    @FXML
+    private JFXTextField musicLinkField;
+    @FXML
+    private JFXButton musicImportBtn;
     @FXML
     private VBox musicListBox;
     @FXML
@@ -836,6 +846,9 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
         musicAddFilesBtn.setOnAction(e -> addMusicFiles());
         musicAddFolderBtn.setOnAction(e -> addMusicFolder());
         musicClearBtn.setOnAction(e -> clearMusic());
+        musicImportBtn.setOnAction(e -> importBiliLink());
+        // 回车等同于点「导入」，粘完链接不用再去够鼠标。
+        musicLinkField.setOnAction(e -> importBiliLink());
         musicPrevBtn.setOnAction(e -> MusicPlayer.previous());
         musicPlayPauseBtn.setOnAction(e -> MusicPlayer.toggle());
         musicNextBtn.setOnAction(e -> MusicPlayer.next());
@@ -939,21 +952,94 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
         }
     }
 
+    /** 从输入框里的 B 站链接导入音频。
+     * <p>
+     * 解析与下载都在后台线程，而列表的增改只能在 JavaFX 线程，所以结果是用回调传回来的。
+     */
+    private void importBiliLink() {
+        String link = musicLinkField.getText();
+        if (link == null || link.isBlank()) {
+            app.toast.showText("请先粘贴一个 B 站视频链接", durationLong);
+            return;
+        }
+        musicImportBtn.setDisable(true);
+        new ImportBiliAudioTask(app.body, link, new File(Const.PathConfig.musicDirPath),
+                this::addImportedTracks,
+                message -> app.toast.showText(message, durationLong),
+                () -> musicImportBtn.setDisable(false)
+        ).start();
+    }
+
+    /** 把刚下载好的曲目并进播放列表。**只在 JavaFX 线程上调用**（任务的 onSucceeded 里）。 */
+    private void addImportedTracks(List<MusicTrack> tracks) {
+        int added = 0;
+        for (MusicTrack track : tracks) {
+            // 同一个文件已经在列表里就跳过，避免出现两条指向同一文件的记录。
+            if (track == null || track.path == null || containsMusicTrack(track.path)) {
+                continue;
+            }
+            data.playlist.add(track);
+            added++;
+        }
+        musicLinkField.clear();
+        if (added > 0) {
+            UserDataStore.save();
+            refreshMusicList();
+        }
+        reportMusicAdded(added);
+    }
+
     private void clearMusic() {
         if (data.playlist.isEmpty()) {
             return;
         }
+        long downloaded = data.playlist.stream()
+                .filter(track -> track != null && track.downloaded && track.path != null)
+                .count();
+        if (downloaded > 0) {
+            // 清空会连带删掉这些文件，不可逆，先问一句。
+            GuiPrefabs.Dialogs.createConfirmDialog(app.body,
+                    GuiPrefabs.Icons.getIcon(GuiPrefabs.Icons.SVG_HELP_ALT, GuiPrefabs.COLOR_INFO),
+                    "清空播放列表",
+                    "要连同下载的文件一起删除吗？",
+                    "列表里有 " + downloaded + " 首是从链接下载的，清空后这些文件也会从磁盘上删除，无法恢复。",
+                    this::clearMusicNow).show();
+            return;
+        }
+        clearMusicNow();
+    }
+
+    private void clearMusicNow() {
         // 先停播放器再清列表：反过来的话播放器会指着一个已经不在列表里的下标。
+        // 停播放器同时也会释放文件句柄，否则下面的删除在 Windows 上会失败。
         MusicPlayer.stop();
+        for (MusicTrack track : data.playlist) {
+            if (track != null && track.downloaded) {
+                deleteTrackFile(track);
+            }
+        }
         data.playlist.clear();
         UserDataStore.save();
         refreshMusicList();
     }
 
+    /** 删除下载来的文件。失败只记日志 —— 文件删不掉不该妨碍列表项被移除。 */
+    private void deleteTrackFile(MusicTrack track) {
+        if (track == null || track.path == null) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(Path.of(track.path));
+        } catch (IOException e) {
+            // 最常见的原因是文件还被播放器占着。
+            Logger.warn("Music", "Failed to delete the downloaded audio file: " + track.path);
+        }
+    }
+
     private void refreshMusicList() {
         musicListBox.getChildren().clear();
         if (data.playlist.isEmpty()) {
-            Label empty = new Label("还没有音乐，点「添加文件」或「添加文件夹」加入本地音频。");
+            Label empty = new Label("还没有音乐，可以「添加文件」「添加文件夹」，或粘贴 B 站链接导入。");
             empty.setStyle("-fx-text-fill: #888;");
             musicListBox.getChildren().add(empty);
             return;
@@ -991,6 +1077,28 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
     }
 
     private void removeMusicTrack(MusicTrack track) {
+        if (track == null) {
+            return;
+        }
+        // 从链接下载来的曲目连磁盘文件一起删；用户自己添加的本地歌永远不碰。
+        if (track.downloaded && track.path != null && new File(track.path).isFile()) {
+            GuiPrefabs.Dialogs.createConfirmDialog(app.body,
+                    GuiPrefabs.Icons.getIcon(GuiPrefabs.Icons.SVG_HELP_ALT, GuiPrefabs.COLOR_INFO),
+                    "删除音乐",
+                    "要连同文件一起删除吗？",
+                    "「" + track.displayTitle() + "」是从链接下载的，删除后磁盘上的文件也会被删掉，无法恢复。",
+                    () -> removeMusicTrackNow(track, true)).show();
+            return;
+        }
+        removeMusicTrackNow(track, false);
+    }
+
+    /** 执行移除。{@code deleteFile} 为真时连磁盘文件一起删。
+     * <p>
+     * 顺序很关键：**先把播放器从那首歌上挪开，再删文件**。播放器还占着文件句柄时，Windows 上
+     * 是删不掉的。下面的切歌 / 停止都会走到 {@code disposePlayer()}，那才是真正释放句柄的地方。
+     */
+    private void removeMusicTrackNow(MusicTrack track, boolean deleteFile) {
         int removed = data.playlist.indexOf(track);
         boolean wasCurrent = removed >= 0 && removed == MusicPlayer.getIndex();
         data.playlist.remove(track);
@@ -1002,6 +1110,9 @@ public final class EfficiencyModule implements Controller<ArkHomeFX> {
                 // 删掉的是正在播的那首：接着播落在同一个下标上的曲目。
                 MusicPlayer.playIndex(removed);
             }
+        }
+        if (deleteFile) {
+            deleteTrackFile(track);
         }
         refreshMusicList();
     }

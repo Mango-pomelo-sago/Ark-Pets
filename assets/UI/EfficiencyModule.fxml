@@ -202,6 +202,18 @@
                                     </styleClass>
                                 </JFXButton>
                             </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                <JFXTextField fx:id="musicLinkField" promptText="粘贴 B 站视频链接"
+                                              HBox.hgrow="ALWAYS"/>
+                                <JFXButton fx:id="musicImportBtn" text="导入">
+                                    <styleClass>
+                                        <String fx:value="btn-secondary"/>
+                                    </styleClass>
+                                </JFXButton>
+                            </HBox>
+                            <Label style="-fx-text-fill: #888; -fx-font-size: 11px;"
+                                   text="下载的音频仅供个人使用，请确认你有权下载。整条链接会导入视频的全部 P，带 ?p=N 则只导入那一 P。"
+                                   wrapText="true"/>
                             <VBox fx:id="musicListBox" spacing="4.0"/>
                             <Separator/>
                             <Label styleClass="config-group-title" text="播放控制"/>

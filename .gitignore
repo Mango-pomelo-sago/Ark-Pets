@@ -33,3 +33,5 @@ UserData.json
 UserData.json.bak
 /assets/ArkPetsConfig.json
 /assets/logs/
+# Audio imported from Bilibili links is downloaded here during development.
+/assets/music/

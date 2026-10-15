@@ -14,6 +14,10 @@ processResources {
             "**/models_enemies/**",
             "**/models/**",
             "**/logs/**",
+            // User-downloaded audio lives in assets/music/ during development. Without this the
+            // files would be copied into build/resources, then into the fat jar, then into the
+            // shipped installer - i.e. the developer's own downloads would be distributed.
+            "**/music/**",
             "models_data.json"
     ]
 }
