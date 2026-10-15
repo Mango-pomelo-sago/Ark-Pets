@@ -67,6 +67,7 @@ public class MemberTrayImpl extends MemberTray {
         popMenu.add(optTransparentEn);
         if (arkPets.canChangeStage())
             popMenu.add(optChangeStage);
+        popMenu.add(optEfficiency);
         popMenu.add(optExit);
         popMenu.setSize(100, 24 * popMenu.getSubElements().length);
 
@@ -157,6 +158,18 @@ public class MemberTrayImpl extends MemberTray {
     @Override
     public void sendOperation(SocketData.Operation operation) {
         client.sendRequest(SocketData.ofOperation(uuid, operation));
+    }
+
+    @Override
+    public void onEfficiency() {
+        Logger.info("MemberTray", "Request to show efficiency module");
+        // 效率页整个住在启动器窗口里，桌宠这边唯一能做的就是请启动器把它带出来。
+        if (client.isConnected())
+            sendOperation(SocketData.Operation.ACTIVATE_EFFICIENCY);
+        else
+            // 没连上启动器就是个孤立的桌宠，没人能响应这个请求。这里必须出声，否则菜单项点了
+            // 毫无反应，用起来像是坏了。走气泡而不是弹窗，因为桌宠进程根本不该弹模态窗。
+            showTip("效率工具在启动器里，请先打开 ArkPets 启动器。");
     }
 
     @Override

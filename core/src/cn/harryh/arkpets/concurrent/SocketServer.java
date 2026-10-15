@@ -131,6 +131,7 @@ public final class SocketServer {
                         close();
                     }
                     case ACTIVATE_LAUNCHER -> hostTray.showStage();
+                    case ACTIVATE_EFFICIENCY -> hostTray.showEfficiency();
                     case LOGIN -> {
                         tray = new MemberTrayProxy(socketData, this, hostTray);
                         hostTray.addMemberTray(uuid, tray);

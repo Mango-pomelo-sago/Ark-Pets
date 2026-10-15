@@ -28,6 +28,7 @@ public class HostTray {
 
     private Runnable onShowStage;
     private Runnable onCloseStage;
+    private Runnable onShowEfficiency;
 
     private static HostTray instance;
 
@@ -148,6 +149,21 @@ public class HostTray {
 
     public void setOnCloseStage(Runnable handler) {
         onCloseStage = handler;
+    }
+
+    /** Asks the launcher to bring its window forward on the efficiency module.
+     * <p>
+     * Deliberately not guarded by {@link #initialized}: the request arrives over the socket as well
+     * as from the tray menu, so it must still work on a machine where no tray icon could be added.
+     */
+    public void showEfficiency() {
+        Logger.info("HostTray", "Request to show efficiency module");
+        if (onShowEfficiency != null)
+            onShowEfficiency.run();
+    }
+
+    public void setOnShowEfficiency(Runnable handler) {
+        onShowEfficiency = handler;
     }
 
     public MemberTray getMemberTray(UUID uuid) {

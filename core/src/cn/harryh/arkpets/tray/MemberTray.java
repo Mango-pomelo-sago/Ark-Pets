@@ -17,6 +17,7 @@ public abstract class MemberTray {
     protected JMenuItem optTransparentEn    = new JMenuItem("透明模式");
     protected JMenuItem optTransparentDis   = new JMenuItem("取消透明");
     protected JMenuItem optChangeStage      = new JMenuItem("切换形态");
+    protected JMenuItem optEfficiency       = new JMenuItem("效率工具");
     protected JMenuItem optExit             = new JMenuItem("退出");
     protected final UUID uuid;
     protected final String name;
@@ -55,11 +56,17 @@ public abstract class MemberTray {
         optChangeStage      .addActionListener(e -> sendOperation(SocketData.Operation.CHANGE_STAGE));
         optExit             .addActionListener(e -> sendOperation(SocketData.Operation.LOGOUT));
 
+        // 「效率工具」是唯一不走上面那套双发（本地 onXxx + sendOperation 通知启动器）的菜单项：
+        // 桌宠自己没有任何可做的事，该由谁响应完全取决于它是否连着启动器 —— 孤立运行时只能嘴上
+        // 说一句，连着启动器时要把请求转过去。这两个选择互斥，所以只挂一个监听器，由子类自己决定。
+        optEfficiency       .addActionListener(e -> onEfficiency());
+
         optKeepAnimEn       .setIcon(null);
         optKeepAnimDis      .setIcon(null);
         optTransparentEn    .setIcon(null);
         optTransparentDis   .setIcon(null);
         optChangeStage      .setIcon(null);
+        optEfficiency       .setIcon(null);
         optExit             .setIcon(null);
     }
 
@@ -74,6 +81,11 @@ public abstract class MemberTray {
     abstract public void onKeepAnimDis();
 
     abstract public void onKeepAnimEn();
+
+    /** Asks for the launcher's efficiency module to be brought up. See {@link #optEfficiency} for
+     * why this one is not paired with a {@link #sendOperation} call the way the other items are.
+     */
+    abstract public void onEfficiency();
 
     abstract public void remove();
 

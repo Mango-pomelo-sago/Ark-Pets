@@ -33,6 +33,7 @@ public class MemberTrayProxy extends MemberTray {
         popMenu.add(innerLabel);
         popMenu.add(optKeepAnimEn);
         popMenu.add(optTransparentEn);
+        popMenu.add(optEfficiency);
         popMenu.add(optExit);
         popMenu.setSize(100, 24 * popMenu.getSubElements().length);
 
@@ -88,6 +89,14 @@ public class MemberTrayProxy extends MemberTray {
     @Override
     public void sendOperation(SocketData.Operation operation) {
         session.send(SocketData.ofOperation(uuid, operation));
+    }
+
+    @Override
+    public void onEfficiency() {
+        Logger.info("ProxyTray", "Request to show efficiency module");
+        // 这个菜单本来就长在启动器自己的托盘里，切页就地完成即可，不必再往桌宠那边绕一趟 socket
+        // （那条路最后也是回到这里）。
+        hostTray.showEfficiency();
     }
 
     @Override

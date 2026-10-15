@@ -19,9 +19,10 @@ import java.util.function.Supplier;
 /** A small always-on-top bubble that shows a short piece of text next to an ArkPets window.
  * <p>
  * It is an undecorated {@link JWindow} so that it never steals focus and never shows up in the
- * taskbar. While visible it follows the ArkPets window. It stays there until the user clicks it
- * away, so the reminder is never missed by looking elsewhere for a moment; {@link #setOnDismiss}
- * reports that click to whoever queued the text. All of its methods may be called from any thread.
+ * taskbar. While visible it follows the ArkPets window. It stays there until the user presses its
+ * confirm button, so the reminder is never missed by looking elsewhere for a moment;
+ * {@link #setOnDismiss} reports that confirmation to whoever queued the text.
+ * All of its methods may be called from any thread.
  * @since ArkPets 3.13
  */
 public class TipWindow {
@@ -54,8 +55,10 @@ public class TipWindow {
     private final JWindow window;
     private final BubblePanel panel;
     private final JLabel label;
+    /** The only way out of the bubble. Everything else in it ignores the mouse. */
+    private final JButton confirmButton;
     private final Timer followTimer;
-    /** Run after the user clicks the bubble away, so a queue can bring up the next reminder. */
+    /** Run after the user confirms the bubble, so a queue can bring up the next reminder. */
     private Runnable onDismiss;
     /** Whether the bubble's tail points down (i.e. the bubble sits above the ArkPets window). */
     private boolean tailDown = true;
@@ -96,29 +99,66 @@ public class TipWindow {
             baseFont = new Font("Microsoft YaHei", Font.PLAIN, 13);
         label.setFont(baseFont.deriveFont(Font.PLAIN, 13f));
 
+        confirmButton = new JButton("确定");
+        // The window is not focusable on purpose (otherwise it would steal the foreground window's
+        // focus), so the button can never hold keyboard focus either; marking it non-focusable just
+        // stops Swing from painting a focus ring in a window that never has focus.
+        confirmButton.setFocusable(false);
+        confirmButton.setForeground(COLOR_STROKE);
+        confirmButton.setFont(baseFont.deriveFont(Font.BOLD, 13f));
+        // Drawn as an outline rather than a filled block: Windows' LookAndFeel paints its own
+        // background for buttons and would fight a custom fill.
+        confirmButton.setContentAreaFilled(false);
+        confirmButton.setOpaque(false);
+        confirmButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        confirmButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COLOR_STROKE),
+                BorderFactory.createEmptyBorder(2, 18, 2, 18)));
+        // Merely hovering must not arm the button; there is no hover feedback to give it anyway.
+        confirmButton.setRolloverEnabled(false);
+
+        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        buttonRow.setOpaque(false);
+        buttonRow.setBorder(BorderFactory.createEmptyBorder(7, 0, 0, 0)); // Gap under the text.
+        buttonRow.add(confirmButton);
+
         panel = new BubblePanel();
-        panel.add(label);
-        MouseAdapter dismiss = new MouseAdapter() {
+        panel.add(label, BorderLayout.CENTER);
+        panel.add(buttonRow, BorderLayout.SOUTH);
+        // Only this button dismisses the bubble, and only when it is actually pressed; the rest of
+        // the bubble ignores the mouse entirely. A reminder is the kind of thing you must not miss,
+        // and a stray click on the text is far easier to do by accident than pressing a button.
+        //
+        // Note this listens for the press instead of using the button's action. Windows delivers a
+        // mouse *release* to whatever window sits under the pointer at that moment, and this bubble
+        // is always on top, so a user who presses the mouse anywhere else and lets go over the
+        // bubble hands it a bare MOUSE_RELEASED. Swing treats that as a click and would fire the
+        // action -- silently dismissing a reminder nobody acknowledged, which is the one thing this
+        // button exists to prevent. A press can only come from the pointer being on the button.
+        confirmButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() != MouseEvent.BUTTON1)
+                    return;
+                // Swing hands this window's mouse events to whichever component it is tracking,
+                // which is not always the one under the pointer: it holds on to the component that
+                // got an earlier press until that sequence ends. Checking the coordinates keeps
+                // "only the button dismisses" true even then -- a press that is not within the
+                // button is not a press on the button.
+                if (!confirmButton.contains(e.getPoint()))
+                    return;
                 hide();
                 if (onDismiss != null)
                     onDismiss.run();
             }
-        };
-        panel.addMouseListener(dismiss);
-        label.addMouseListener(dismiss);
-        // Nothing removes the bubble on its own, so point out that clicking it is the way out.
-        Cursor hand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-        panel.setCursor(hand);
-        label.setCursor(hand);
+        });
         window.setContentPane(panel);
 
         followTimer = new Timer(FOLLOW_INTERVAL_MS, e -> updateLocation());
         updateInsets();
     }
 
-    /** Shows the bubble with the given text. It stays until the user clicks it away.
+    /** Shows the bubble with the given text. It stays until the user presses its confirm button.
      * @param text The text to display; multi-line text is supported.
      */
     public void show(String text) {
@@ -140,7 +180,7 @@ public class TipWindow {
         followTimer.restart();
     }
 
-    /** Sets what to run once the user has clicked the bubble away. May be called from any thread.
+    /** Sets what to run once the user has confirmed the bubble. May be called from any thread.
      * <p>
      * It is deliberately not run by {@link #hide()} or {@link #dispose()}: those are also how the
      * owner tears the bubble down, and that must not be mistaken for the user acknowledging it.

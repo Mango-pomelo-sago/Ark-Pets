@@ -97,6 +97,20 @@ public class ArkHomeFX extends Application {
                 HostTray hostTray = HostTray.getInstance();
                 hostTray.setOnCloseStage(() -> Platform.runLater(rootModule::exit));
                 hostTray.setOnShowStage(() -> Platform.runLater(stage::show));
+                hostTray.setOnShowEfficiency(() -> Platform.runLater(() -> {
+                    // 效率页住在主窗口里面，所以先把窗口带出来。show() 对被最小化的窗口不做任何事，
+                    // 得显式还原，否则点了「效率工具」看上去毫无反应。
+                    if (stage.isIconified())
+                        stage.setIconified(false);
+                    stage.show();
+                    stage.toFront();
+                    // 3 = 效率页。走 composer 而不是直接改 wrapper4 的可见性，这样侧栏按钮的高亮
+                    // 会跟着一起切，不至于指着一个没显示的页面。
+                    rootModule.moduleWrapperComposer.activate(3);
+                    // 对话框（公告、日志等）盖在模块区上面，只切页的话用户眼前仍是那个对话框，
+                    // 看上去和没点一样。让它们按自己的返回键退场。
+                    dialogs.closeActivatedDialogs();
+                }));
                 SocketServer.getInstance().startServer(hostTray);
                 hostTray.applyTrayIcon();
             } catch (PortUtils.NoPortAvailableException ex) {

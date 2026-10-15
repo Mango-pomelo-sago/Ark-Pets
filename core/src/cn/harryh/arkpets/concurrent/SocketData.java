@@ -27,7 +27,9 @@ public class SocketData implements Serializable {
         HANDSHAKE_RESPONSE,
         ACTIVATE_LAUNCHER,
         /** 让桌宠在自身旁边弹出一则提示气泡，文本由 {@link #msg} 承载。 */
-        SHOW_TIP
+        SHOW_TIP,
+        /** 请启动器把主窗口带到前台并切到「效率」页，由桌宠右键菜单的「效率工具」发出。 */
+        ACTIVATE_EFFICIENCY
     }
 
     /** The UUID for identification.

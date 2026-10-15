@@ -8,6 +8,8 @@ import com.jfoenix.controls.JFXDialog;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
@@ -89,6 +91,24 @@ public class DialogComposer<T extends Application> {
      */
     public void popDialog(String dialogId) {
         popDialog(dialogId, null);
+    }
+
+    /** Closes every dialog that is currently up, exactly as its own return button would.
+     * <p>
+     * A dialog covers the module area, so anything that switches the page behind one of them is
+     * switching a page nobody can see. Rather than leave the caller with nothing visible to show
+     * for it, it asks the dialogs to step aside; what was worth reading stays reachable through the
+     * control that opened it.
+     * @return How many dialogs were told to close.
+     */
+    public int closeActivatedDialogs() {
+        // Over a copy: closing a dialog deblurs its background and drops it from the set, and on a
+        // zero-length animation that can happen within the loop.
+        List<DialogRecord<T>> open = new ArrayList<>(activatedDialogs);
+        for (DialogRecord<T> dialogRecord : open)
+            dialogRecord.dialogController()
+                    .triggerReturnActionCallback(new ActionEvent(this, Event.NULL_SOURCE_TARGET));
+        return open.size();
     }
 
     public DialogController<T> registerDialog(String dialogId,
