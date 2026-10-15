@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 public final class Const {
     // App version
-    public static final Version appVersion              = new Version(3, 13, 4);
+    public static final Version appVersion              = new Version(3, 13, 5);
     public static final Version datasetLowestVersion    = new Version(2, 2, 0);
 
     // App name
